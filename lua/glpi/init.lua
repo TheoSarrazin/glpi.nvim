@@ -5,7 +5,16 @@ local api = require("glpi.api")
 local M = {}
 
 local function browse_ticket(ticket)
-	os.execute("open " .. config.base_url .. "/front/ticket.form.php?id=" .. ticket.id)
+	local commands = {
+		Linux = "xdg-open",
+		Windows = "start",
+		Darwin = "open",
+	}
+
+	---@diagnostic disable-next-line: undefined-field
+	local os_type = vim.loop.os_uname().sysname
+
+	os.execute(commands[os_type] .. " " .. config.base_url .. "/front/ticket.form.php?id=" .. ticket.id)
 end
 
 local function select_ticket()
