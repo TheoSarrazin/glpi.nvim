@@ -15,72 +15,73 @@ M.windows = {
 	},
 }
 
-local function close_ui()
+local augroup = vim.api.nvim_create_augroup("GLPI-group", { clear = true })
+
+local function close_ui(window_type)
 	local function close_win(win)
 		if win ~= nil and vim.api.nvim_win_is_valid(win) then
 			vim.api.nvim_win_close(win, true)
 		end
 	end
+	local function close_buf(current_buf)
+		if current_buf ~= nil and vim.api.nvim_buf_is_valid(current_buf) then
+			vim.api.nvim_buf_delete(current_buf, { force = true })
+		end
+	end
 
-	close_win(M.windows.main.win)
-	M.windows.main.win = nil
+	if window_type ~= "main" then
+		close_win(M.windows[window_type].win)
+		close_buf(M.windows[window_type].buf)
+		M.windows[window_type].win = nil
+		M.windows[window_type].buf = nil
+		return
+	end
 
-	close_win(M.windows.sidebar.win)
-	M.windows.sidebar.win = nil
-
-	close_win(M.windows.searchbar.win)
-	M.windows.searchbar.win = nil
+	for _, win in pairs(vim.tbl_keys(M.windows)) do
+		close_win(M.windows[win].win)
+		close_buf(M.windows[win].buf)
+		M.windows[win].win = nil
+		M.windows[win].buf = nil
+	end
 end
 
-local function create_buf()
+local function create_buf(window_type)
 	local buf = vim.api.nvim_create_buf(false, true)
+
 	vim.api.nvim_set_option_value("filetype", "markdown", { buf = buf })
-	vim.keymap.set("n", "q", close_ui, { buffer = buf })
+	vim.api.nvim_set_option_value("wrap", true, { win = M.windows[window_type].win })
+	vim.keymap.set("n", "q", function()
+		vim.api.nvim_win_close(M.windows[window_type].win, true)
+	end, { buffer = buf })
+
 	return buf
-end
-
-local function get_width(win_type)
-	local sidebar_win = M.windows.sidebar.win
-	if win_type == "main" and sidebar_win ~= nil and vim.api.nvim_win_is_valid(sidebar_win) then
-		return math.floor(vim.o.columns * 0.8 * 0.66)
-	end
-	return math.floor(vim.o.columns * 0.8)
-end
-
-local function get_height(win_type)
-	local searchbar_win = M.windows.searchbar.win
-	local height = math.floor(vim.o.lines * 0.8)
-	if win_type == "main" and searchbar_win ~= nil and vim.api.nvim_win_is_valid(searchbar_win) then
-		return height - 3
-	end
-	return height
 end
 
 local function open_win(opts)
 	opts = opts or {}
+
 	local window_type = opts.window_type or "main"
+	local buf = create_buf(window_type)
 
-	local buf = M.windows[window_type].buf or create_buf()
+	local win = M.windows[window_type].win
 
-	local function create_win()
-		local border = opts.border or "rounded"
-		local style = opts.style or "minimal"
-		local width = opts.width or get_width(window_type)
-		local height = opts.height or get_height(window_type)
-		local col = math.floor((vim.o.columns - width) / 2)
-		local row = math.floor((vim.o.lines - height) / 2)
-		return vim.api.nvim_open_win(buf, true, {
-			relative = "editor",
-			width = width,
-			height = height,
-			col = col,
-			row = row,
-			border = border,
-			style = style,
-		})
+	if window_type == "main" then
+		win = win or vim.api.nvim_get_current_win()
+	else
+		if win == nil then
+			vim.api.nvim_command("vsplit")
+			win = vim.api.nvim_get_current_win()
+		end
 	end
 
-	local win = M.windows[window_type].win or create_win()
+	vim.api.nvim_create_autocmd("WinClosed", {
+		group = augroup,
+		pattern = tostring(win),
+		callback = function()
+			close_ui(window_type)
+		end,
+	})
+	vim.api.nvim_win_set_buf(win, buf)
 
 	M.windows[window_type].win = win
 	M.windows[window_type].buf = buf
@@ -88,19 +89,32 @@ local function open_win(opts)
 	return win, buf
 end
 
+function M.open_tab()
+	vim.api.nvim_command("tabnew")
+end
+
 function M.open_tickets(tickets, callbacks)
 	callbacks = callbacks or {}
 
 	local win, buf = open_win()
 
+	vim.api.nvim_buf_set_name(buf, "GLPI")
+
+	if callbacks.on_quit then
+		vim.api.nvim_create_autocmd("WinClosed", {
+			pattern = tostring(win),
+			callback = callbacks.on_quit,
+		})
+	end
+
 	local lines = {}
 
-	local function insert_tickets(title, tickets)
-		if tickets ~= nil and #tickets > 0 then
+	local function insert_tickets(title, tickets_list)
+		if tickets_list ~= nil and #tickets_list > 0 then
 			table.insert(lines, "# " .. title)
 			table.insert(lines, "")
-			for _, ticket in ipairs(tickets) do
-				table.insert(lines, "- " .. ticket)
+			for _, ticket in ipairs(tickets_list) do
+				table.insert(lines, "- " .. ticket["1"])
 			end
 			table.insert(lines, "")
 			table.insert(lines, "")
@@ -117,6 +131,56 @@ function M.open_tickets(tickets, callbacks)
 		vim.keymap.set("n", "<CR>", function()
 			callbacks.on_selection(win, buf)
 		end, { buffer = buf })
+	end
+end
+
+function M.open_ticket(ticket, callbacks)
+	callbacks = callbacks or {}
+
+	local title = ticket.title
+
+	local _, buf = open_win({ window_type = "sidebar" })
+	vim.api.nvim_buf_set_name(buf, title)
+
+	local lines = {}
+
+	table.insert(lines, "# " .. title)
+	table.insert(lines, "")
+	table.insert(lines, "## Le " .. ticket.creation_date .. ", " .. ticket.users[1] .. " a écrit : ")
+	table.insert(lines, "")
+
+	for _, line in ipairs(vim.split(ticket.content, "\n")) do
+		table.insert(lines, line)
+	end
+
+	if #ticket.followups > 0 then
+		table.insert(lines, "")
+		table.insert(lines, "## Suivi")
+		table.insert(lines, "")
+
+		for _, followup in ipairs(ticket.followups) do
+			table.insert(lines, "### Le " .. followup.date_creation .. ", " .. followup.user .. " a écrit :")
+			table.insert(lines, "")
+			for _, line in ipairs(vim.split(followup.content, "\n")) do
+				table.insert(lines, line)
+			end
+			table.insert(lines, "")
+		end
+	end
+
+	if #ticket.tech_names > 0 then
+		table.insert(lines, "")
+		table.insert(lines, "## Technicien(s) sur le ticket")
+		table.insert(lines, "")
+		for _, tech in ipairs(ticket.tech_names) do
+			table.insert(lines, "- " .. tech)
+		end
+	end
+
+	vim.api.nvim_buf_set_lines(buf, 0, -1, true, lines)
+
+	if callbacks.on_selection ~= nil then
+		vim.keymap.set("n", "<CR>", callbacks.on_selection, { buffer = buf })
 	end
 end
 
