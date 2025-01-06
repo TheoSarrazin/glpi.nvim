@@ -46,7 +46,12 @@ local function close_ui(window_type)
 end
 
 local function create_buf(window_type)
-	local buf = vim.api.nvim_create_buf(false, true)
+	local buf = M.windows[window_type].buf
+	if buf ~= nil and vim.api.nvim_buf_is_valid(buf) then
+		vim.api.nvim_buf_delete(buf, { force = true })
+	end
+
+	buf = vim.api.nvim_create_buf(false, true)
 
 	vim.api.nvim_set_option_value("filetype", "markdown", { buf = buf })
 	vim.api.nvim_set_option_value("wrap", true, { win = M.windows[window_type].win })
