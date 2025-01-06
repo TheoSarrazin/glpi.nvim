@@ -277,7 +277,7 @@ function M.get_ticket_id(id)
 	end
 
 	return {
-        id = id,
+		id = id,
 		title = title,
 		status = status,
 		content = content,
@@ -294,6 +294,16 @@ function M.get_tickets()
 		my = search_tickets({ type = "my" }) or {},
 		other = search_tickets({ type = "other" }) or {},
 	}
+end
+
+function M.add_solution(content, ticket)
+    print("adding solution")
+	print(vim.inspect({ content, ticket }))
+end
+
+function M.add_followup(content, ticket)
+    print("adding followup")
+	print(vim.inspect({ content, ticket }))
 end
 
 return setmetatable(M, {

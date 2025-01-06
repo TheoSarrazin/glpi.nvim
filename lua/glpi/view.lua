@@ -15,6 +15,11 @@ M.windows = {
 	},
 }
 
+local followup_bufs = {
+	solution = nil,
+	followup = nil,
+}
+
 local augroup = vim.api.nvim_create_augroup("GLPI-group", { clear = true })
 
 local function close_ui(window_type)
@@ -62,6 +67,43 @@ local function create_buf(window_type)
 	return buf
 end
 
+local function open_floating_win(opts)
+	opts = opts or {}
+
+	local width = opts.width or math.floor(vim.o.columns * 0.8)
+	local height = opts.height or math.floor(vim.o.lines * 0.8)
+	local col = (vim.o.columns - width) / 2
+	local row = (vim.o.lines - height) / 2
+	local border = opts.border or "rounded"
+	local title = opts.title
+
+	local buf = opts.buf
+
+	if buf == nil or vim.api.nvim_buf_is_valid(buf) == false then
+		buf = vim.api.nvim_create_buf(false, true)
+	end
+
+	local win = vim.api.nvim_open_win(buf, true, {
+		relative = "editor",
+		style = "minimal",
+		width = width,
+		height = height,
+		col = col,
+		row = row,
+		title = title,
+		title_pos = "center",
+		border = border,
+	})
+
+	vim.api.nvim_set_option_value("filetype", "markdown", { buf = buf })
+
+	vim.keymap.set("n", "q", function()
+		vim.api.nvim_win_close(win, true)
+	end, { buffer = buf })
+
+	return win, buf
+end
+
 local function open_win(opts)
 	opts = opts or {}
 
@@ -94,6 +136,26 @@ local function open_win(opts)
 	return win, buf
 end
 
+local function add_followup(title, buf, callbacks)
+	callbacks = callbacks or {}
+
+	local win = nil
+	win, buf = open_floating_win({ buf = buf, title = title })
+
+	if callbacks.on_validation ~= nil then
+		local function on_validation()
+			local content = vim.api.nvim_buf_get_lines(buf, 0, -1, true)
+			callbacks.on_validation(content)
+			vim.api.nvim_win_close(win, true)
+		end
+
+		vim.keymap.set("n", "<cr>", on_validation, { buffer = buf })
+		vim.keymap.set("i", "<c-s>", on_validation, { buffer = buf })
+	end
+
+	return win, buf
+end
+
 function M.open_tab()
 	vim.api.nvim_command("tabnew")
 end
@@ -107,6 +169,7 @@ function M.open_tickets(tickets, callbacks)
 
 	if callbacks.on_quit then
 		vim.api.nvim_create_autocmd("WinClosed", {
+			group = augroup,
 			pattern = tostring(win),
 			callback = callbacks.on_quit,
 		})
@@ -141,6 +204,10 @@ end
 
 function M.open_ticket(ticket, callbacks)
 	callbacks = callbacks or {}
+
+    -- Reset buffers, new ticket = new buffer
+	followup_bufs.followup = nil
+	followup_bufs.solution = nil
 
 	local title = ticket.title
 
@@ -187,6 +254,24 @@ function M.open_ticket(ticket, callbacks)
 	if callbacks.on_selection ~= nil then
 		vim.keymap.set("n", "<CR>", callbacks.on_selection, { buffer = buf })
 	end
+
+	if callbacks.on_solution ~= nil then
+		vim.keymap.set("n", "S", callbacks.on_solution, { buffer = buf })
+	end
+
+	if callbacks.on_solution ~= nil then
+		vim.keymap.set("n", "R", callbacks.on_followup, { buffer = buf })
+	end
+end
+
+function M.open_solution(callbacks)
+	local _, buf = add_followup("Solution", followup_bufs.solution, callbacks)
+	followup_bufs.solution = buf
+end
+
+function M.open_followup(callbacks)
+	local _, buf = add_followup("Suivi", followup_bufs.followup, callbacks)
+	followup_bufs.followup = buf
 end
 
 return M

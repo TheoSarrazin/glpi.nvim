@@ -30,6 +30,20 @@ local function select_ticket()
 		on_selection = function()
 			browse_ticket(ticket)
 		end,
+		on_solution = function()
+			view.open_solution({
+				on_validation = function(content)
+					api.add_solution(content, ticket)
+				end,
+			})
+		end,
+		on_followup = function()
+			view.open_followup({
+				on_validation = function(content)
+					api.add_followup(content, ticket)
+				end,
+			})
+		end,
 	})
 end
 
