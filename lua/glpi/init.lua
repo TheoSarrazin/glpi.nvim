@@ -12,7 +12,7 @@ function M.setup(opts)
 	config.setup(opts)
 end
 
-function M.init()
+function M.load_tickets()
 	view.open_tab()
 	view.open_tickets(api.tickets, {
 		on_quit = function()
