@@ -272,13 +272,13 @@ function M.open_ticket(ticket, callbacks)
 	end
 
 	if callbacks.on_next ~= nil then
-		vim.keymap.set("n", "<c-J>", function()
+		vim.keymap.set("n", "<c-j>", function()
 			callbacks.on_next(M.windows.main.win, M.windows.main.buf)
 		end, { buffer = buf })
 	end
 
 	if callbacks.on_prev ~= nil then
-		vim.keymap.set("n", "<c-K>", function()
+		vim.keymap.set("n", "<c-k>", function()
 			callbacks.on_prev(M.windows.main.win, M.windows.main.buf)
 		end, { buffer = buf })
 	end

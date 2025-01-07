@@ -20,15 +20,14 @@ end
 local function select_ticket(win, buf)
 	local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, true)
 	local cursor = vim.api.nvim_win_get_cursor(win)
-	local current_line = vim.api.nvim_buf_get_lines(buf, cursor[1] - 1, cursor[1], true)[1]
 	local ticket_number = 0
 	local search = "- "
 
-	for _, line in ipairs(lines) do
+	for i, line in ipairs(lines) do
 		if string.sub(line, 1, #search) == search then
 			ticket_number = ticket_number + 1
 		end
-		if current_line == line then
+		if i == cursor[1] then
 			break
 		end
 	end
