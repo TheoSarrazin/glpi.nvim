@@ -11,8 +11,8 @@ local defaults = {
 		add_followup = "R",
 		next_ticket = "<c-j>",
 		prev_ticket = "<c-k>",
-        attribution = "<space>gt",
-        attribution_to_me = "<space>ga",
+		attribution = "<space>gt",
+		attribution_to_me = "<space>ga",
 	},
 }
 

@@ -27,3 +27,25 @@ With lazy.nvim
     },
 }
 ```
+
+# Configuration
+
+Default opts:
+
+```lua
+{
+	endpoint = nil,
+	user_token = nil,
+	app_token = nil,
+	tech_name = nil,
+	tech_profile_id = nil,
+	keymaps = {
+		add_solution = "S", -- keymap to add a solution
+		add_followup = "R", -- keymap to add a followup
+		next_ticket = "<c-j>", -- keymap to go to the next ticket
+		prev_ticket = "<c-k>", -- keymap to go to the previous ticket
+		attribution = "<space>gt", -- keymap to add someone to the ticket
+		attribution_to_me = "<space>ga", -- keymap to add himself to the ticket
+	},
+}
+```
