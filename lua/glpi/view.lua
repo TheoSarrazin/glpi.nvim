@@ -158,6 +158,27 @@ local function add_followup(title, buf, callbacks)
 	return win, buf
 end
 
+local function format_tickets_view(tickets)
+	local lines = {}
+
+	local function insert_tickets(title, tickets_list)
+		if tickets_list ~= nil and #tickets_list > 0 then
+			table.insert(lines, "# " .. title)
+			table.insert(lines, "")
+			for _, ticket in ipairs(tickets_list) do
+				table.insert(lines, "- " .. ticket["1"])
+			end
+			table.insert(lines, "")
+			table.insert(lines, "")
+		end
+	end
+
+	insert_tickets("Nouveau Tickets", tickets.new)
+	insert_tickets("Mes tickets", tickets.my)
+	insert_tickets("Autres tickets", tickets.other)
+	return lines
+end
+
 function M.open_tab()
 	vim.api.nvim_command("tabnew")
 end
@@ -177,24 +198,7 @@ function M.open_tickets(tickets, callbacks)
 		})
 	end
 
-	local lines = {}
-
-	local function insert_tickets(title, tickets_list)
-		if tickets_list ~= nil and #tickets_list > 0 then
-			table.insert(lines, "# " .. title)
-			table.insert(lines, "")
-			for _, ticket in ipairs(tickets_list) do
-				table.insert(lines, "- " .. ticket["1"])
-			end
-			table.insert(lines, "")
-			table.insert(lines, "")
-		end
-	end
-
-	insert_tickets("Nouveau Tickets", tickets.new)
-	insert_tickets("Mes tickets", tickets.my)
-	insert_tickets("Autres tickets", tickets.other)
-
+	local lines = format_tickets_view(tickets)
 	vim.api.nvim_buf_set_lines(buf, 0, -1, true, lines)
 
 	if callbacks.on_selection ~= nil then
@@ -202,6 +206,17 @@ function M.open_tickets(tickets, callbacks)
 			callbacks.on_selection(win, buf)
 		end, { buffer = buf })
 	end
+end
+
+function M.update_tickets(tickets)
+	local buf = M.windows.main.buf
+
+	if buf == nil then
+		return
+	end
+
+	local lines = format_tickets_view(tickets)
+	vim.api.nvim_buf_set_lines(buf, 0, -1, true, lines)
 end
 
 function M.open_ticket(ticket, callbacks)

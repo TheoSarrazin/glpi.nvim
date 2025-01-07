@@ -13,6 +13,7 @@ local defaults = {
 		prev_ticket = "<c-k>",
 		attribution = "<space>gt",
 		attribution_to_me = "<space>ga",
+		reload_ticket = "<space>gg",
 	},
 }
 

@@ -310,6 +310,10 @@ function M.kill_session()
 	print("Session killed")
 end
 
+function M.update_tickets()
+	M.tickets = get_tickets()
+end
+
 function M.get_ticket(idx)
 	local new_n = #M.tickets.new
 	local my_n = #M.tickets.my

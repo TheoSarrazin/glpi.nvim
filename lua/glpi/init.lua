@@ -85,6 +85,11 @@ end
 
 function M.setup(opts)
 	config.setup(opts)
+
+	vim.keymap.set("n", config.keymaps.reload_ticket, function()
+		api.update_tickets()
+		view.update_tickets(api.tickets)
+	end, {})
 end
 
 function M.load_tickets()

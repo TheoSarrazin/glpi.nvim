@@ -46,6 +46,7 @@ Default opts:
 		prev_ticket = "<c-k>", -- keymap to go to the previous ticket
 		attribution = "<space>gt", -- keymap to add someone to the ticket
 		attribution_to_me = "<space>ga", -- keymap to add himself to the ticket
+		reload_ticket = "<space>gg", -- keymap to reload tickets list
 	},
 }
 ```
