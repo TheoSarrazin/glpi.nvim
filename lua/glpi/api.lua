@@ -27,6 +27,9 @@ local function clean_content(content)
 	content = content:gsub("&lt;/p&gt;", "\n")
 	content = content:gsub("\r\n", "\n")
 	content = content:gsub("&#60;.-&#62;", "")
+	content = content:gsub("&#38;lt;", "<")
+	content = content:gsub("&#38;gt;", ">")
+	content = content:gsub("&#38;#43;", "+")
 	return content
 end
 
