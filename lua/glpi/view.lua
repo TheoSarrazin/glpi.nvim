@@ -231,7 +231,11 @@ function M.open_ticket(ticket, callbacks)
 		table.insert(lines, "")
 
 		for _, followup in ipairs(ticket.followups) do
-			table.insert(lines, "### Le " .. followup.date_creation .. ", " .. followup.user .. " a écrit :")
+            local private = followup.is_private == 1 and "🔒" or ""
+			table.insert(
+				lines,
+				"### " .. private .. " Le " .. followup.date_creation .. ", " .. followup.user .. " a écrit :"
+			)
 			table.insert(lines, "")
 			for _, line in ipairs(vim.split(followup.content, "\n")) do
 				table.insert(lines, line)
