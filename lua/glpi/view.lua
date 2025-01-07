@@ -145,7 +145,8 @@ local function add_followup(title, buf, callbacks)
 	if callbacks.on_validation ~= nil then
 		local function on_validation()
 			local content = vim.api.nvim_buf_get_lines(buf, 0, -1, true)
-			callbacks.on_validation(content)
+            local str_content = table.concat(content, "\n")
+			callbacks.on_validation(str_content)
 			vim.api.nvim_win_close(win, true)
 		end
 

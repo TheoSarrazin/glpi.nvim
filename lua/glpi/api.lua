@@ -127,6 +127,37 @@ local function add_item(item_type, data)
 	return make_post_request("/" .. item_type, data)
 end
 
+local function add_ITIL_followup(ticket_id, content)
+	local data = {
+		input = {
+			itemtype = "Ticket",
+			items_id = ticket_id,
+			users_id = M.options.user_id,
+			content = content,
+			is_private = false,
+			requesttypes_id = 1,
+			sourceitems_id = 0,
+			sourceof_items_id = 0,
+		},
+	}
+	return add_item("ITILFollowup", data)
+end
+
+local function add_ITIL_solution(ticket_id, content)
+	local data = {
+		input = {
+			itemtype = "Ticket",
+			items_id = ticket_id,
+			users_id = M.options.user_id,
+			content = content,
+			solutiontypes_id = 1,
+			sourceitems_id = 0,
+			sourceof_items_id = 0,
+		},
+	}
+	return add_item("ITILSolution", data)
+end
+
 local function get_user(user_id)
 	return get_item("User", user_id)
 end
@@ -346,11 +377,11 @@ function M.get_ticket_id(id)
 end
 
 function M.add_solution(content, ticket)
-	print("adding solution")
+	add_ITIL_solution(ticket.id, content)
 end
 
 function M.add_followup(content, ticket)
-	print("adding followup")
+	add_ITIL_followup(ticket.id, content)
 end
 
 function M.attribute_ticket_to(ticket, user_id)
