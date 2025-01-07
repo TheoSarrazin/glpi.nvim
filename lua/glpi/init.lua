@@ -53,6 +53,15 @@ local function select_ticket()
 				end,
 			})
 		end,
+		on_attribution = function()
+			local techs = api.techs
+			vim.ui.select(vim.tbl_keys(techs), { prompt = "Veuillez choisir un technicien" }, function(user)
+				api.attribute_ticket_to(ticket, techs[user])
+			end)
+		end,
+		on_attribution_to_me = function()
+			api.attribute_ticket_to(ticket, api.options.user_id)
+		end,
 	})
 end
 

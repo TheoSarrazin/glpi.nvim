@@ -2,7 +2,7 @@ local curl = require("plenary.curl")
 local config = require("glpi.config")
 local M = {}
 
-local options = {
+M.options = {
 	session_token = nil,
 	user_id = nil,
 }
@@ -16,6 +16,7 @@ local ticket_status = {
 }
 
 M.tickets = nil
+M.techs = nil
 
 local function clean_content(content)
 	content = content:gsub("&#38;nbsp;", "")
@@ -60,6 +61,7 @@ local function make_crit_string(data, prefix)
 end
 local function make_get_request(url, crit, other_params)
 	url = config.endpoint .. url
+
 	if crit ~= nil then
 		local crit_string = make_crit_string(crit)
 		url = url .. "?" .. crit_string
@@ -72,7 +74,7 @@ local function make_get_request(url, crit, other_params)
 	local res = curl.get(url, {
 		headers = {
 			content_type = "application/json",
-			session_token = options.session_token,
+			session_token = M.options.session_token,
 			app_token = config.app_token,
 		},
 	})
@@ -82,6 +84,28 @@ local function make_get_request(url, crit, other_params)
 
 	if status ~= 200 and status ~= 206 then
 		error("Error performing get request" .. body)
+	end
+
+	return vim.fn.json_decode(body)
+end
+
+local function make_post_request(url, data)
+	url = config.endpoint .. url
+
+	local res = curl.post(url, {
+		headers = {
+			content_type = "application/json",
+			session_token = M.options.session_token,
+			app_token = config.app_token,
+		},
+		body = vim.fn.json_encode(data),
+	})
+
+	local status = res.status
+	local body = res.body
+
+	if status ~= 200 and status ~= 201 then
+		error("Error performing POST request \n" .. body)
 	end
 
 	return vim.fn.json_decode(body)
@@ -97,6 +121,10 @@ end
 local function search_items(item_type, crit, other_params)
 	local items = make_get_request("/search/" .. item_type, crit, other_params)
 	return items.data
+end
+
+local function add_item(item_type, data)
+	return make_post_request("/" .. item_type, data)
 end
 
 local function get_user(user_id)
@@ -126,7 +154,7 @@ local function search_tickets(opts)
 	elseif type == "my" then
 		table.insert(crit, {
 			field = 5,
-			value = options.user_id,
+			value = M.options.user_id,
 			searchtype = "equals",
 		})
 
@@ -149,7 +177,7 @@ local function search_tickets(opts)
 	elseif type == "other" then
 		table.insert(crit, {
 			field = 5,
-			value = options.user_id,
+			value = M.options.user_id,
 			searchtype = "notequals",
 		})
 
@@ -188,6 +216,35 @@ local function get_user_id()
 	return users[1]["2"]
 end
 
+local function get_tickets()
+	return {
+		new = search_tickets({ type = "new" }) or {},
+		my = search_tickets({ type = "my" }) or {},
+		other = search_tickets({ type = "other" }) or {},
+	}
+end
+
+local function get_techs()
+	local raw_techs = {}
+	if type(config.tech_profile_id) == "table" then
+		for _, profile_id in pairs(config.tech_profile_id) do
+			local techs = get_item("Profile", profile_id, "/User")
+			for _, tech in ipairs(techs) do
+				table.insert(raw_techs, tech)
+			end
+		end
+	else
+		raw_techs = get_item("Profile", config.tech_profile_id, "/User")
+	end
+	local techs = {}
+
+	for _, tech in ipairs(raw_techs) do
+		local name = tech["realname"] .. " " .. tech["firstname"]
+		techs[name] = tech["id"]
+	end
+	return techs
+end
+
 function M.init_session()
 	local res = curl.get(config.endpoint .. "/initSession", {
 		headers = {
@@ -204,8 +261,8 @@ function M.init_session()
 		error("Error during initSession! Check endpoint, user_token and app_token\n" .. body)
 	end
 
-	options.session_token = vim.fn.json_decode(body).session_token
-	options.user_id = get_user_id()
+	M.options.session_token = vim.fn.json_decode(body).session_token
+	M.options.user_id = get_user_id()
 
 	print("Glpi session initiated")
 end
@@ -216,7 +273,7 @@ function M.kill_session()
 		error("Impossible de fermer la session")
 	end
 
-	options.session_token = nil
+	M.options.session_token = nil
 	M.tickets = nil
 
 	print("Session killed")
@@ -288,30 +345,37 @@ function M.get_ticket_id(id)
 	}
 end
 
-function M.get_tickets()
-	return {
-		new = search_tickets({ type = "new" }) or {},
-		my = search_tickets({ type = "my" }) or {},
-		other = search_tickets({ type = "other" }) or {},
-	}
-end
-
 function M.add_solution(content, ticket)
-    print("adding solution")
+	print("adding solution")
 	print(vim.inspect({ content, ticket }))
 end
 
 function M.add_followup(content, ticket)
-    print("adding followup")
+	print("adding followup")
 	print(vim.inspect({ content, ticket }))
+end
+
+function M.attribute_ticket_to(ticket, user_id)
+	local data = {
+		input = {
+			tickets_id = ticket.id,
+			users_id = user_id,
+			type = 2,
+			use_notification = 1,
+		},
+	}
+	add_item("Ticket_User", data)
+	local username = get_username(user_id)
+	print('"' .. ticket.title .. '" est attribué à ' .. username)
 end
 
 return setmetatable(M, {
 	__index = function(_, k)
-		if options.session_token == nil then
+		if M.options.session_token == nil then
 			M.init_session()
 		end
-		M.tickets = M.get_tickets()
+		M.tickets = get_tickets()
+		M.techs = get_techs()
 		return rawget(M, k)
 	end,
 })

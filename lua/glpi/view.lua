@@ -205,7 +205,7 @@ end
 function M.open_ticket(ticket, callbacks)
 	callbacks = callbacks or {}
 
-    -- Reset buffers, new ticket = new buffer
+	-- Reset buffers, new ticket = new buffer
 	followup_bufs.followup = nil
 	followup_bufs.solution = nil
 
@@ -261,6 +261,14 @@ function M.open_ticket(ticket, callbacks)
 
 	if callbacks.on_solution ~= nil then
 		vim.keymap.set("n", "R", callbacks.on_followup, { buffer = buf })
+	end
+
+	if callbacks.on_attribution ~= nil then
+		vim.keymap.set("n", "<space>gt", callbacks.on_attribution, { buffer = buf })
+	end
+
+	if callbacks.on_attribution_to_me ~= nil then
+		vim.keymap.set("n", "<space>ga", callbacks.on_attribution_to_me, { buffer = buf })
 	end
 end
 
