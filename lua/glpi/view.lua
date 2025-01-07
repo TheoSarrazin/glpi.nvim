@@ -1,3 +1,4 @@
+local config = require("glpi.config")
 local M = {}
 
 M.windows = {
@@ -145,7 +146,7 @@ local function add_followup(title, buf, callbacks)
 	if callbacks.on_validation ~= nil then
 		local function on_validation()
 			local content = vim.api.nvim_buf_get_lines(buf, 0, -1, true)
-            local str_content = table.concat(content, "\n")
+			local str_content = table.concat(content, "\n")
 			callbacks.on_validation(str_content)
 			vim.api.nvim_win_close(win, true)
 		end
@@ -232,7 +233,7 @@ function M.open_ticket(ticket, callbacks)
 		table.insert(lines, "")
 
 		for _, followup in ipairs(ticket.followups) do
-            local private = followup.is_private == 1 and "🔒" or ""
+			local private = followup.is_private == 1 and "🔒" or ""
 			table.insert(
 				lines,
 				"### " .. private .. " Le " .. followup.date_creation .. ", " .. followup.user .. " a écrit :"
@@ -261,29 +262,29 @@ function M.open_ticket(ticket, callbacks)
 	end
 
 	if callbacks.on_solution ~= nil then
-		vim.keymap.set("n", "S", callbacks.on_solution, { buffer = buf })
+		vim.keymap.set("n", config.keymaps.add_solution, callbacks.on_solution, { buffer = buf })
 	end
 
-	if callbacks.on_solution ~= nil then
-		vim.keymap.set("n", "R", callbacks.on_followup, { buffer = buf })
+	if callbacks.on_followup ~= nil then
+		vim.keymap.set("n", config.keymaps.add_followup, callbacks.on_followup, { buffer = buf })
 	end
 
 	if callbacks.on_attribution ~= nil then
-		vim.keymap.set("n", "<space>gt", callbacks.on_attribution, { buffer = buf })
+		vim.keymap.set("n", config.keymaps.attribution, callbacks.on_attribution, { buffer = buf })
 	end
 
 	if callbacks.on_attribution_to_me ~= nil then
-		vim.keymap.set("n", "<space>ga", callbacks.on_attribution_to_me, { buffer = buf })
+		vim.keymap.set("n", config.keymaps.attribution_to_me, callbacks.on_attribution_to_me, { buffer = buf })
 	end
 
 	if callbacks.on_next ~= nil then
-		vim.keymap.set("n", "<c-j>", function()
+		vim.keymap.set("n", config.keymaps.next_ticket, function()
 			callbacks.on_next(M.windows.main.win, M.windows.main.buf)
 		end, { buffer = buf })
 	end
 
 	if callbacks.on_prev ~= nil then
-		vim.keymap.set("n", "<c-k>", function()
+		vim.keymap.set("n", config.keymaps.prev_ticket, function()
 			callbacks.on_prev(M.windows.main.win, M.windows.main.buf)
 		end, { buffer = buf })
 	end

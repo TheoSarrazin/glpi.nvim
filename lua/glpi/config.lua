@@ -6,6 +6,14 @@ local defaults = {
 	app_token = nil,
 	tech_name = nil,
 	tech_profile_id = nil,
+	keymaps = {
+		add_solution = "S",
+		add_followup = "R",
+		next_ticket = "<c-j>",
+		prev_ticket = "<c-k>",
+        attribution = "<space>gt",
+        attribution_to_me = "<space>ga",
+	},
 }
 
 M.options = {}
