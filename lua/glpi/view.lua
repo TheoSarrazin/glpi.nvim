@@ -35,7 +35,7 @@ local function close_ui(window_type)
 		end
 	end
 
-	if window_type ~= "main" then
+	if window_type ~= "main" then -- when leaving non main window, close this window
 		close_win(M.windows[window_type].win)
 		close_buf(M.windows[window_type].buf)
 		M.windows[window_type].win = nil
@@ -43,7 +43,7 @@ local function close_ui(window_type)
 		return
 	end
 
-	for _, win in pairs(vim.tbl_keys(M.windows)) do
+	for _, win in pairs(vim.tbl_keys(M.windows)) do -- else, we are leaving main, so we close all the UI
 		close_win(M.windows[win].win)
 		close_buf(M.windows[win].buf)
 		M.windows[win].win = nil
@@ -163,7 +163,7 @@ local function format_tickets_view(tickets)
 
 	local function insert_tickets(title, tickets_list)
 		if tickets_list ~= nil and #tickets_list > 0 then
-			table.insert(lines, "# " .. title)
+			table.insert(lines, "# " .. title .. " (" .. #tickets_list .. ")")
 			table.insert(lines, "")
 			for _, ticket in ipairs(tickets_list) do
 				table.insert(lines, "- " .. ticket["1"])
