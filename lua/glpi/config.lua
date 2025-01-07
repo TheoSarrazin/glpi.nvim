@@ -11,6 +11,16 @@ local defaults = {
 M.options = {}
 
 function M.setup(opts)
+	local function check_madatory_key(keys)
+		for _, key in ipairs(keys) do
+			if opts[key] == nil then
+				error(key .. " doit être renseigné")
+			end
+		end
+	end
+
+	check_madatory_key({ "endpoint", "user_token", "app_token", "tech_name", "tech_profile_id" })
+
 	M.options = vim.tbl_deep_extend("force", {}, defaults, opts or {})
 	M.options.endpoint = M.options.endpoint:gsub("/$", "")
 	M.options.base_url = M.options.endpoint:gsub("/apirest.php$", "")
