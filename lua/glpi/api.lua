@@ -347,12 +347,10 @@ end
 
 function M.add_solution(content, ticket)
 	print("adding solution")
-	print(vim.inspect({ content, ticket }))
 end
 
 function M.add_followup(content, ticket)
 	print("adding followup")
-	print(vim.inspect({ content, ticket }))
 end
 
 function M.attribute_ticket_to(ticket, user_id)

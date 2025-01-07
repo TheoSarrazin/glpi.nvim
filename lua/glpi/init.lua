@@ -17,9 +17,10 @@ local function browse_ticket(ticket)
 	os.execute(commands[os_type] .. " " .. config.base_url .. "/front/ticket.form.php?id=" .. ticket.id)
 end
 
-local function select_ticket()
-	local lines = vim.api.nvim_buf_get_lines(0, 0, -1, true)
-	local current_line = vim.api.nvim_get_current_line()
+local function select_ticket(win, buf)
+	local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, true)
+	local cursor = vim.api.nvim_win_get_cursor(win)
+	local current_line = vim.api.nvim_buf_get_lines(buf, cursor[1] - 1, cursor[1], true)[1]
 	local ticket_number = 0
 	local search = "- "
 
@@ -61,6 +62,21 @@ local function select_ticket()
 		end,
 		on_attribution_to_me = function()
 			api.attribute_ticket_to(ticket, api.options.user_id)
+		end,
+		on_next = function(w, b)
+			local lcursor = vim.api.nvim_win_get_cursor(w)
+			lcursor[1] = lcursor[1] + 1
+			vim.api.nvim_win_set_cursor(w, lcursor)
+			select_ticket(w, b)
+		end,
+		on_prev = function(w, b)
+			local lcursor = vim.api.nvim_win_get_cursor(w)
+			lcursor[1] = lcursor[1] - 1
+			if lcursor[1] < 0 then
+				lcursor[1] = 0
+			end
+			vim.api.nvim_win_set_cursor(w, lcursor)
+			select_ticket(w, b)
 		end,
 	})
 end

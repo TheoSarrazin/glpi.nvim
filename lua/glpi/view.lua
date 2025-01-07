@@ -270,6 +270,18 @@ function M.open_ticket(ticket, callbacks)
 	if callbacks.on_attribution_to_me ~= nil then
 		vim.keymap.set("n", "<space>ga", callbacks.on_attribution_to_me, { buffer = buf })
 	end
+
+	if callbacks.on_next ~= nil then
+		vim.keymap.set("n", "<c-J>", function()
+			callbacks.on_next(M.windows.main.win, M.windows.main.buf)
+		end, { buffer = buf })
+	end
+
+	if callbacks.on_prev ~= nil then
+		vim.keymap.set("n", "<c-K>", function()
+			callbacks.on_prev(M.windows.main.win, M.windows.main.buf)
+		end, { buffer = buf })
+	end
 end
 
 function M.open_solution(callbacks)
