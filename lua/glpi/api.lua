@@ -1,5 +1,6 @@
 local curl = require("plenary.curl")
 local config = require("glpi.config")
+local utils = require("glpi.utils")
 local M = {}
 
 M.options = {
@@ -167,26 +168,36 @@ local function get_user(user_id)
 end
 
 local function get_username(user_id)
+	local user_name = utils.get_user_in_cache(user_id)
+
+	if user_name ~= nil then
+		return user_name
+	end
+
 	local user = get_user(user_id)
 	local firstname = user["firstname"]
 	local lastname = user["realname"]
-	return lastname .. " " .. firstname
+	user_name = lastname .. " " .. firstname
+	utils.add_user_to_cache(user_id, user_name)
+	utils.write_user_cache()
+
+	return user_name
 end
 
 local function search_tickets(opts)
 	opts = opts or {}
 
-	local type = opts.type or "new"
+	local ticket_type = opts.type or "new"
 
 	local crit = {}
 
-	if type == "new" then
+	if ticket_type == "new" then
 		table.insert(crit, {
 			field = 12,
 			value = 1,
 			searchtype = "equals",
 		})
-	elseif type == "my_pending" then
+	elseif ticket_type == "my_pending" then
 		table.insert(crit, {
 			field = 5,
 			value = M.options.user_id,
@@ -203,7 +214,7 @@ local function search_tickets(opts)
 				},
 			},
 		})
-	elseif type == "my_processing" then
+	elseif ticket_type == "my_processing" then
 		table.insert(crit, {
 			field = 5,
 			value = M.options.user_id,
@@ -220,7 +231,7 @@ local function search_tickets(opts)
 				},
 			},
 		})
-	elseif type == "my" then
+	elseif ticket_type == "my" then
 		table.insert(crit, {
 			field = 5,
 			value = M.options.user_id,
@@ -243,7 +254,7 @@ local function search_tickets(opts)
 				},
 			},
 		})
-	elseif type == "other" then
+	elseif ticket_type == "other" then
 		table.insert(crit, {
 			field = 5,
 			value = M.options.user_id,
@@ -274,9 +285,24 @@ local function search_tickets(opts)
 		return nil
 	end
 
+	local function parse_usernames(users)
+		if type(users) == "string" then
+			return get_username(users)
+		end
+
+		local names = {}
+		for _, user in ipairs(users) do
+			table.insert(names, get_username(user))
+		end
+		return names
+	end
+
 	for i, _ in ipairs(tickets) do
 		local status = get_status(tickets[i]["12"])
 		tickets[i]["12"] = status
+
+		tickets[i]["4"] = parse_usernames(tickets[i]["4"])
+		tickets[i]["5"] = parse_usernames(tickets[i]["5"])
 	end
 
 	return tickets

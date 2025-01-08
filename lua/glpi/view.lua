@@ -166,7 +166,10 @@ local function format_tickets_view(tickets)
 			table.insert(lines, "# " .. title .. " (" .. #tickets_list .. ")")
 			table.insert(lines, "")
 			for _, ticket in ipairs(tickets_list) do
-				table.insert(lines, "- " .. ticket["1"] .. " (" .. ticket["12"] .. ")")
+				local ticket_4 = ticket["4"]
+				local name = type(ticket_4) == "table" and ticket_4[1] or ticket_4
+
+				table.insert(lines, "- " .. ticket["1"] .. " (" .. ticket["12"] .. " | " .. name .. ")")
 			end
 			table.insert(lines, "")
 			table.insert(lines, "")

@@ -1,6 +1,7 @@
 local config = require("glpi.config")
 local view = require("glpi.view")
 local api = require("glpi.api")
+local utils = require("glpi.utils")
 
 local M = {}
 
@@ -45,6 +46,7 @@ end
 
 function M.setup(opts)
 	config.setup(opts)
+    utils.setup()
 
 	vim.keymap.set("n", config.keymaps.reload_ticket, reload_tickets, {})
 	vim.keymap.set("n", config.keymaps.toggle_separation, function()

@@ -17,7 +17,7 @@ local function get_tickets()
 	local function extract_ticket(t)
 		for _, ticket in ipairs(t) do
 			local id = ticket["2"]
-			local name = ticket["1"]
+			local name = ticket["1"] .. " (" .. ticket["4"] .. ")"
 			tickets[name] = id
 		end
 	end
