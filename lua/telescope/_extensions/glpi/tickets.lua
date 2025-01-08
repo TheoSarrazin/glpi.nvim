@@ -17,7 +17,10 @@ local function get_tickets()
 	local function extract_ticket(t)
 		for _, ticket in ipairs(t) do
 			local id = ticket["2"]
-			local name = ticket["1"] .. " (" .. ticket["4"] .. ")"
+			local techs = ticket["5"]
+			local techs_name = type(techs) == "table" and table.concat(techs, " ") or techs
+
+			local name = ticket["1"] .. " (" .. ticket["4"] .. ") users: " .. techs_name
 			tickets[name] = id
 		end
 	end
@@ -40,6 +43,12 @@ return function()
 			prompt_title = "Tickets en attente",
 			finder = finders.new_table({
 				results = get_tickets(),
+				entry_maker = function(entry)
+					return {
+						ordinal = entry,
+						display = entry:gsub(" users: .*$", ""),
+					}
+				end,
 			}),
 			sorter = conf.generic_sorter(),
 			attach_mappings = function(prompt_bufnr, _)
@@ -47,7 +56,7 @@ return function()
 					actions.close(prompt_bufnr)
 
 					local selection = state.get_selected_entry()
-					local ticket_id = tickets[selection[1]]
+					local ticket_id = tickets[selection.ordinal]
 					local ticket = api.get_ticket_id(ticket_id)
 					glpi.load_tickets()
 					glpi.load_ticket(ticket)
