@@ -402,13 +402,26 @@ end
 function M.get_ticket(idx)
 	local new_n = #M.tickets.new
 	local my_n = #M.tickets.my
+	local my_processing_n = 0
+
+	if config.separate_pending_processing then
+		my_processing_n = #M.tickets.my.processing
+	end
 
 	if idx <= new_n then
 		return M.tickets.new[idx]
 	end
 
-	if idx - new_n <= my_n then
-		return M.tickets.my[idx - new_n]
+	if config.separate_pending_processing then
+		if idx - new_n <= my_processing_n then
+			return M.tickets.my.processing[idx - new_n]
+		else
+			return M.tickets.my.pending[idx - new_n - my_processing_n]
+		end
+	else
+		if idx - new_n <= my_n then
+			return M.tickets.my[idx - new_n]
+		end
 	end
 
 	return M.tickets.other[idx - new_n - my_n]
