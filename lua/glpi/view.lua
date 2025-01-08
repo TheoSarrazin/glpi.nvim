@@ -209,6 +209,8 @@ function M.open_tickets(tickets, callbacks)
 	local lines = format_tickets_view(tickets)
 	vim.api.nvim_buf_set_lines(buf, 0, -1, true, lines)
 
+	vim.api.nvim_win_set_cursor(win, { 3, 0 })
+
 	if callbacks.on_selection ~= nil then
 		vim.keymap.set("n", "<CR>", function()
 			callbacks.on_selection(win, buf)

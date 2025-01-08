@@ -35,6 +35,35 @@ local function select_ticket(win, buf)
 	local ticket = api.get_ticket(ticket_number)
 	ticket = api.get_ticket_id(ticket["2"])
 
+	M.load_ticket(ticket)
+end
+
+local function reload_tickets()
+	api.update_tickets()
+	view.update_tickets(api.tickets)
+end
+
+function M.setup(opts)
+	config.setup(opts)
+
+	vim.keymap.set("n", config.keymaps.reload_ticket, reload_tickets, {})
+	vim.keymap.set("n", config.keymaps.toggle_separation, function()
+		config.toggle_processing_pending_separation()
+		reload_tickets()
+	end, {})
+end
+
+function M.load_tickets()
+	view.open_tab()
+	view.open_tickets(api.tickets, {
+		on_quit = function()
+			api.kill_session()
+		end,
+		on_selection = select_ticket,
+	})
+end
+
+function M.load_ticket(ticket)
 	view.open_ticket(ticket, {
 		on_selection = function()
 			browse_ticket(ticket)
@@ -80,31 +109,6 @@ local function select_ticket(win, buf)
 			vim.api.nvim_win_set_cursor(w, lcursor)
 			select_ticket(w, b)
 		end,
-	})
-end
-
-local function reload_tickets()
-	api.update_tickets()
-	view.update_tickets(api.tickets)
-end
-
-function M.setup(opts)
-	config.setup(opts)
-
-	vim.keymap.set("n", config.keymaps.reload_ticket, reload_tickets, {})
-	vim.keymap.set("n", config.keymaps.toggle_separation, function()
-		config.toggle_processing_pending_separation()
-		reload_tickets()
-	end, {})
-end
-
-function M.load_tickets()
-	view.open_tab()
-	view.open_tickets(api.tickets, {
-		on_quit = function()
-			api.kill_session()
-		end,
-		on_selection = select_ticket,
 	})
 end
 
