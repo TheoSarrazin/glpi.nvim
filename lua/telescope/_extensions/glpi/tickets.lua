@@ -18,7 +18,7 @@ local function get_tickets()
 		for _, ticket in ipairs(t) do
 			local id = ticket["2"]
 			local techs = ticket["5"]
-			local techs_name = type(techs) == "table" and table.concat(techs, " ") or techs
+			local techs_name = type(techs) == "table" and table.concat(techs, " ") or (techs == vim.NIL and "" or techs)
 
 			local name = ticket["1"] .. " (" .. ticket["4"] .. ") users: " .. techs_name
 			tickets[name] = id

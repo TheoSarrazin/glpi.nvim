@@ -286,6 +286,10 @@ local function search_tickets(opts)
 	end
 
 	local function parse_usernames(users)
+		if users == vim.NIL then
+			return vim.NIL
+		end
+
 		if type(users) == "string" then
 			return get_username(users)
 		end

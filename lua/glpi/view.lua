@@ -290,11 +290,15 @@ function M.open_ticket(ticket, callbacks)
 	end
 
 	if callbacks.on_solution ~= nil then
-		vim.keymap.set("n", config.keymaps.add_solution, callbacks.on_solution, { buffer = buf })
+		vim.keymap.set("n", config.keymaps.add_solution, function()
+			M.open_solution({ on_validation = callbacks.on_solution })
+		end, { buffer = buf })
 	end
 
 	if callbacks.on_followup ~= nil then
-		vim.keymap.set("n", config.keymaps.add_followup, callbacks.on_followup, { buffer = buf })
+		vim.keymap.set("n", config.keymaps.add_followup, function()
+			M.open_followup({ on_validation = callbacks.on_followup })
+		end, { buffer = buf })
 	end
 
 	if callbacks.on_attribution ~= nil then

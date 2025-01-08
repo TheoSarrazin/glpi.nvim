@@ -78,19 +78,11 @@ function M.load_ticket(ticket)
 		on_selection = function()
 			browse_ticket(ticket)
 		end,
-		on_solution = function()
-			view.open_solution({
-				on_validation = function(content)
-					api.add_solution(content, ticket)
-				end,
-			})
+		on_solution = function(content)
+			api.add_solution(content, ticket)
 		end,
-		on_followup = function()
-			view.open_followup({
-				on_validation = function(content)
-					api.add_followup(content, ticket)
-				end,
-			})
+		on_followup = function(content)
+			api.add_followup(content, ticket)
 		end,
 		on_attribution = function()
 			local techs = api.techs
