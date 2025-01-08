@@ -1,8 +1,8 @@
 local actions = require("telescope.actions")
 local finders = require("telescope.finders")
 local pickers = require("telescope.pickers")
-local sorters = require("telescope.sorters")
 local state = require("telescope.actions.state")
+local conf = require("telescope.config").values
 
 local api = require("glpi.api")
 local config = require("glpi.config")
@@ -16,16 +16,18 @@ local function get_tickets()
 
 	local function extract_ticket(t)
 		for _, ticket in ipairs(t) do
-			tickets[ticket["1"]] = ticket["2"]
+			local id = ticket["2"]
+			local name = ticket["1"]
+			tickets[name] = id
 		end
 	end
 
 	extract_ticket(api.tickets.new)
 	if separate_pending_processing then
-		extract_ticket(api.tickets.new.pending)
-		extract_ticket(api.tickets.new.processing)
+		extract_ticket(api.tickets.my.pending)
+		extract_ticket(api.tickets.my.processing)
 	else
-		extract_ticket(api.tickets.new)
+		extract_ticket(api.tickets.my)
 	end
 	extract_ticket(api.tickets.other)
 
@@ -39,7 +41,7 @@ return function()
 			finder = finders.new_table({
 				results = get_tickets(),
 			}),
-			sorter = sorters.get_generic_fuzzy_sorter(),
+			sorter = conf.generic_sorter(),
 			attach_mappings = function(prompt_bufnr, _)
 				actions.select_default:replace(function()
 					actions.close(prompt_bufnr)

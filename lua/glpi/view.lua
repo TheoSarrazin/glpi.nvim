@@ -325,4 +325,8 @@ function M.open_followup(callbacks)
 	followup_bufs.followup = buf
 end
 
+function M.main_is_open()
+	return M.windows.main.win ~= nil and vim.api.nvim_win_is_valid(M.windows.main.win)
+end
+
 return M

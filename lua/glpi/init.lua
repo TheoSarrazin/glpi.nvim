@@ -54,6 +54,9 @@ function M.setup(opts)
 end
 
 function M.load_tickets()
+	if view.main_is_open() then
+		return
+	end
 	view.open_tab()
 	view.open_tickets(api.tickets, {
 		on_quit = function()

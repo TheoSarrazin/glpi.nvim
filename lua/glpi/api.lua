@@ -270,6 +270,10 @@ local function search_tickets(opts)
 
 	local tickets = search_items("Ticket", crit, "&sort=19&order=DESC")
 
+	if tickets == nil then
+		return nil
+	end
+
 	for i, _ in ipairs(tickets) do
 		local status = get_status(tickets[i]["12"])
 		tickets[i]["12"] = status
