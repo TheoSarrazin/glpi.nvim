@@ -83,12 +83,18 @@ local function select_ticket(win, buf)
 	})
 end
 
+local function reload_tickets()
+	api.update_tickets()
+	view.update_tickets(api.tickets)
+end
+
 function M.setup(opts)
 	config.setup(opts)
 
-	vim.keymap.set("n", config.keymaps.reload_ticket, function()
-		api.update_tickets()
-		view.update_tickets(api.tickets)
+	vim.keymap.set("n", config.keymaps.reload_ticket, reload_tickets, {})
+	vim.keymap.set("n", config.keymaps.toggle_separation, function()
+		config.toggle_processing_pending_separation()
+		reload_tickets()
 	end, {})
 end
 

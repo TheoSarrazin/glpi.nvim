@@ -15,6 +15,7 @@ local defaults = {
 		attribution = "<space>gt",
 		attribution_to_me = "<space>ga",
 		reload_ticket = "<space>gg",
+		toggle_separation = "<space>gp",
 	},
 }
 
@@ -34,6 +35,10 @@ function M.setup(opts)
 	M.options = vim.tbl_deep_extend("force", {}, defaults, opts or {})
 	M.options.endpoint = M.options.endpoint:gsub("/$", "")
 	M.options.base_url = M.options.endpoint:gsub("/apirest.php$", "")
+end
+
+function M.toggle_processing_pending_separation()
+	M.separate_pending_processing = not M.separate_pending_processing
 end
 
 return setmetatable(M, {
