@@ -46,7 +46,7 @@ end
 
 function M.setup(opts)
 	config.setup(opts)
-    utils.setup()
+	utils.setup()
 
 	vim.keymap.set("n", config.keymaps.reload_ticket, reload_tickets, {})
 	vim.keymap.set("n", config.keymaps.toggle_separation, function()
@@ -59,13 +59,18 @@ function M.load_tickets()
 	if view.main_is_open() then
 		return
 	end
+
 	view.open_tab()
+	local buf = vim.api.nvim_get_current_buf() -- (1) get the buffer created by the tab
+
 	view.open_tickets(api.tickets, {
 		on_quit = function()
 			api.kill_session()
 		end,
 		on_selection = select_ticket,
 	})
+
+	vim.api.nvim_buf_delete(buf, { force = true }) -- (2) When UI is load, close the buffer
 end
 
 function M.load_ticket(ticket)
