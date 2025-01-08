@@ -166,7 +166,7 @@ local function format_tickets_view(tickets)
 			table.insert(lines, "# " .. title .. " (" .. #tickets_list .. ")")
 			table.insert(lines, "")
 			for _, ticket in ipairs(tickets_list) do
-				table.insert(lines, "- " .. ticket["1"])
+				table.insert(lines, "- " .. ticket["1"] .. " (" .. ticket["12"] .. ")")
 			end
 			table.insert(lines, "")
 			table.insert(lines, "")
@@ -174,8 +174,16 @@ local function format_tickets_view(tickets)
 	end
 
 	insert_tickets("Nouveau Tickets", tickets.new)
-	insert_tickets("Mes tickets", tickets.my)
+
+	if config.separate_pending_processing then
+		insert_tickets("Mes tickets en cours", tickets.my.processing)
+		insert_tickets("Mes tickets en attente", tickets.my.pending)
+	else
+		insert_tickets("Mes tickets", tickets.my)
+	end
+
 	insert_tickets("Autres tickets", tickets.other)
+
 	return lines
 end
 
@@ -233,7 +241,7 @@ function M.open_ticket(ticket, callbacks)
 
 	local lines = {}
 
-	table.insert(lines, "# " .. title)
+	table.insert(lines, "# " .. title .. " (" .. ticket.status .. ")")
 	table.insert(lines, "")
 	table.insert(lines, "## Le " .. ticket.creation_date .. ", " .. ticket.users[1] .. " a écrit : ")
 	table.insert(lines, "")

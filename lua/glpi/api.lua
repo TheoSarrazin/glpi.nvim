@@ -186,7 +186,7 @@ local function search_tickets(opts)
 			value = 1,
 			searchtype = "equals",
 		})
-	elseif type == "my" then
+	elseif type == "my_pending" then
 		table.insert(crit, {
 			field = 5,
 			value = M.options.user_id,
@@ -201,10 +201,44 @@ local function search_tickets(opts)
 					value = 4,
 					searchtype = "equals",
 				},
+			},
+		})
+	elseif type == "my_processing" then
+		table.insert(crit, {
+			field = 5,
+			value = M.options.user_id,
+			searchtype = "equals",
+		})
+
+		table.insert(crit, {
+			link = "AND",
+			criteria = {
+				{
+					field = 12,
+					value = 2,
+					searchtype = "equals",
+				},
+			},
+		})
+	elseif type == "my" then
+		table.insert(crit, {
+			field = 5,
+			value = M.options.user_id,
+			searchtype = "equals",
+		})
+
+		table.insert(crit, {
+			link = "AND",
+			criteria = {
+				{
+					field = 12,
+					value = 2,
+					searchtype = "equals",
+				},
 				{
 					link = "OR",
 					field = 12,
-					value = 2,
+					value = 4,
 					searchtype = "equals",
 				},
 			},
@@ -235,6 +269,12 @@ local function search_tickets(opts)
 	end
 
 	local tickets = search_items("Ticket", crit, "&sort=19&order=DESC")
+
+	for i, _ in ipairs(tickets) do
+		local status = get_status(tickets[i]["12"])
+		tickets[i]["12"] = status
+	end
+
 	return tickets
 end
 
@@ -252,9 +292,20 @@ local function get_user_id()
 end
 
 local function get_tickets()
+	local my = {}
+
+	if config.separate_pending_processing then
+		my = {
+			pending = search_tickets({ type = "my_pending" }) or {},
+			processing = search_tickets({ type = "my_processing" }) or {},
+		}
+	else
+		my = search_tickets({ type = "my" }) or {}
+	end
+
 	return {
 		new = search_tickets({ type = "new" }) or {},
-		my = search_tickets({ type = "my" }) or {},
+		my = my,
 		other = search_tickets({ type = "other" }) or {},
 	}
 end

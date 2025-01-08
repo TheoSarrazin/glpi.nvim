@@ -39,6 +39,7 @@ Default opts:
 	app_token = nil,
 	tech_name = nil,
 	tech_profile_id = nil,
+    separate_pending_processing = false, -- show my pending and processing tickets separately?
 	keymaps = {
 		add_solution = "S", -- keymap to add a solution
 		add_followup = "R", -- keymap to add a followup

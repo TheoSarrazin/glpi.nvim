@@ -6,6 +6,7 @@ local defaults = {
 	app_token = nil,
 	tech_name = nil,
 	tech_profile_id = nil,
+	separate_pending_processing = false,
 	keymaps = {
 		add_solution = "S",
 		add_followup = "R",
