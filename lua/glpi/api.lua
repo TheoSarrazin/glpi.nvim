@@ -30,6 +30,7 @@ local function clean_content(content)
 	content = content:gsub("&#38;lt;", "<")
 	content = content:gsub("&#38;gt;", ">")
 	content = content:gsub("&#38;#43;", "+")
+	content = content:gsub("&#38;#8217;", "'")
 	return content
 end
 
