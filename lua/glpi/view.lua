@@ -25,10 +25,10 @@ local augroup = vim.api.nvim_create_augroup("GLPI-group", { clear = true })
 
 local function close_ui(window_type)
 	local function close_win(win)
-        local wins = vim.api.nvim_list_wins()
-        if #wins == 1 then
-            return
-        end
+		local wins = vim.api.nvim_list_wins()
+		if #wins == 1 then
+			return
+		end
 		if win ~= nil and vim.api.nvim_win_is_valid(win) then
 			vim.api.nvim_win_close(win, true)
 		end
@@ -40,16 +40,16 @@ local function close_ui(window_type)
 	end
 
 	if window_type ~= "main" then -- when leaving non main window, close this window
-		close_win(M.windows[window_type].win)
 		close_buf(M.windows[window_type].buf)
+		close_win(M.windows[window_type].win)
 		M.windows[window_type].win = nil
 		M.windows[window_type].buf = nil
 		return
 	end
 
 	for _, win in pairs(vim.tbl_keys(M.windows)) do -- else, we are leaving main, so we close all the UI
-		close_win(M.windows[win].win)
 		close_buf(M.windows[win].buf)
+		close_win(M.windows[win].win)
 		M.windows[win].win = nil
 		M.windows[win].buf = nil
 	end
