@@ -25,6 +25,10 @@ local augroup = vim.api.nvim_create_augroup("GLPI-group", { clear = true })
 
 local function close_ui(window_type)
 	local function close_win(win)
+        local wins = vim.api.nvim_list_wins()
+        if #wins == 1 then
+            return
+        end
 		if win ~= nil and vim.api.nvim_win_is_valid(win) then
 			vim.api.nvim_win_close(win, true)
 		end
@@ -62,7 +66,7 @@ local function create_buf(window_type)
 	vim.api.nvim_set_option_value("filetype", "markdown", { buf = buf })
 	vim.api.nvim_set_option_value("wrap", true, { win = M.windows[window_type].win })
 	vim.keymap.set("n", "q", function()
-		vim.api.nvim_win_close(M.windows[window_type].win, true)
+		close_ui(window_type)
 	end, { buffer = buf })
 
 	return buf
@@ -129,6 +133,7 @@ local function open_win(opts)
 			close_ui(window_type)
 		end,
 	})
+
 	vim.api.nvim_win_set_buf(win, buf)
 
 	M.windows[window_type].win = win
