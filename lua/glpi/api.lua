@@ -432,15 +432,30 @@ function M.get_ticket(idx)
 end
 
 function M.get_ticket_id(id)
-	local ticket = get_item("Ticket", id)
-	local content = clean_content(ticket.content)
-	local status = get_status(ticket.status)
-	local title = ticket.name
-	local creation_date = ticket.date_creation
-	local users = ticket.users_id_recipient
+	local forcedisplay = { 66, 4, 15, 5, 21, 12 }
+
+	local forcedisplay_string = ""
+
+	for i, fd in ipairs(forcedisplay) do
+		forcedisplay_string = forcedisplay_string .. "&forcedisplay\\[" .. i .. "\\]=" .. fd
+	end
+
+	local results = search_items(
+		"Ticket",
+		{ { field = 1, value = id, searchtype = "equals" } },
+		"&sort=19&order=DESC" .. forcedisplay_string
+	)
+
+	local ticket_data = results[1]
+
+	local content = clean_content(ticket_data["21"]) -- 21
+	local status = get_status(ticket_data["12"]) -- 12
+	local title = ticket_data["1"] -- 1
+	local creation_date = ticket_data["15"] -- 15
+	local users = ticket_data["4"] -- 4
 
 	local user_names = {}
-	if type(users) == "number" then
+	if type(users) == "string" then
 		users = { users }
 	end
 
@@ -448,8 +463,6 @@ function M.get_ticket_id(id)
 		table.insert(user_names, get_username(user_id))
 	end
 
-	local results = search_items("Ticket", { { field = 1, value = id, searchtype = "equals" } })
-	local ticket_data = results[1]
 	local tech_ids = ticket_data["5"]
 	local tech_names = {}
 
@@ -460,6 +473,19 @@ function M.get_ticket_id(id)
 
 		for _, tech_id in ipairs(tech_ids) do
 			table.insert(tech_names, get_username(tech_id))
+		end
+	end
+
+	local observers_id = ticket_data["66"]
+	local observers_names = {}
+
+	if observers_id ~= vim.NIL then
+		if type(observers_id) == "string" then
+			observers_id = { observers_id }
+		end
+
+		for _, observer_id in ipairs(observers_id) do
+			table.insert(observers_names, get_username(observer_id))
 		end
 	end
 
@@ -478,6 +504,7 @@ function M.get_ticket_id(id)
 		followups = followups,
 		tech_names = tech_names,
 		users = user_names,
+		observers = observers_names,
 		creation_date = creation_date,
 	}
 end

@@ -289,6 +289,15 @@ function M.open_ticket(ticket, callbacks)
 		end
 	end
 
+	if #ticket.observers > 0 then
+		table.insert(lines, "")
+		table.insert(lines, "## Observateur(s) sur le ticket")
+		table.insert(lines, "")
+		for _, observer in ipairs(ticket.observers) do
+			table.insert(lines, "- " .. observer)
+		end
+	end
+
 	if #ticket.tech_names > 0 then
 		table.insert(lines, "")
 		table.insert(lines, "## Technicien(s) sur le ticket")
