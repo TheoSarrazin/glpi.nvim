@@ -1,4 +1,5 @@
 local config = require("glpi.config")
+local api = require("glpi.api")
 local M = {}
 
 M.windows = {
@@ -174,7 +175,7 @@ local function format_tickets_view(tickets)
 				local ticket_4 = ticket["4"]
 				local name = type(ticket_4) == "table" and ticket_4[1] or ticket_4
 
-				table.insert(lines, "- " .. ticket["1"] .. " (" .. ticket["12"] .. " | " .. name .. ")")
+				table.insert(lines, "- " .. ticket["1"] .. " (" .. ticket["12"] .. " | " .. name .. ")")
 			end
 			table.insert(lines, "")
 			table.insert(lines, "")
@@ -211,6 +212,15 @@ function M.open_tickets(tickets, callbacks)
 			group = augroup,
 			pattern = tostring(win),
 			callback = callbacks.on_quit,
+		})
+		vim.api.nvim_create_autocmd("ExitPre", {
+			group = augroup,
+			callback = function()
+				if api.options.session_token == nil then
+					return
+				end
+				callbacks.on_quit()
+			end,
 		})
 	end
 
