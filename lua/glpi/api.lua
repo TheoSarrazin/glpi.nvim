@@ -32,6 +32,7 @@ local function clean_content(content)
 	content = content:gsub("&#38;gt;", ">")
 	content = content:gsub("&#38;#43;", "+")
 	content = content:gsub("&#38;#8217;", "'")
+	content = content:gsub("&#38;", "&")
 	return content
 end
 
@@ -177,7 +178,14 @@ local function get_username(user_id)
 	local user = get_user(user_id)
 	local firstname = user["firstname"]
 	local lastname = user["realname"]
-	user_name = lastname .. " " .. firstname
+	local name = user["name"]
+
+	if firstname == vim.NIL or lastname == vim.NIL then
+		user_name = name
+	else
+		user_name = lastname .. " " .. firstname
+	end
+
 	utils.add_user_to_cache(user_id, user_name)
 	utils.write_user_cache()
 

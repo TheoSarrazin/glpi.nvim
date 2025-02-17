@@ -19,8 +19,11 @@ local function get_tickets()
 			local id = ticket["2"]
 			local techs = ticket["5"]
 			local techs_name = type(techs) == "table" and table.concat(techs, " ") or (techs == vim.NIL and "" or techs)
+			local requesters = ticket["4"]
+			local requesters_name = type(requesters) == "table" and table.concat(requesters, " ")
+				or (requesters == vim.NIL and "" or requesters)
 
-			local name = ticket["1"] .. " (" .. ticket["4"] .. ") users: " .. techs_name
+			local name = ticket["1"] .. " (" .. requesters_name .. ") users: " .. techs_name
 			tickets[name] = id
 		end
 	end
